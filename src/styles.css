@@ -1,0 +1,420 @@
+:root {
+  color: #111827;
+  background: #111827;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(37, 99, 235, 0.22), transparent 340px),
+    linear-gradient(135deg, #0f172a 0%, #111827 48%, #1e293b 100%);
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+.loading-screen,
+.app-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 18px;
+}
+
+.loading-card,
+.composer-card,
+.save-modal {
+  width: min(540px, 100%);
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 28px 90px rgba(0, 0, 0, 0.35);
+}
+
+.loading-card {
+  display: grid;
+  justify-items: center;
+  gap: 18px;
+  padding: 30px;
+  text-align: center;
+}
+
+.loading-card p {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 850;
+}
+
+.loading-card span {
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+.loading-progress {
+  width: min(280px, 100%);
+  height: 10px;
+  overflow: hidden;
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.loading-progress-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  border-radius: inherit;
+  transform-origin: left;
+  animation: bootProgress 1.35s cubic-bezier(0.18, 0.82, 0.26, 1) forwards;
+}
+
+.composer-card {
+  display: grid;
+  gap: 13px;
+  padding: 18px;
+}
+
+.composer-header {
+  text-align: center;
+}
+
+.composer-header p {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.platform-select {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.platform-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  gap: 8px;
+  padding: 0 12px;
+  color: #111827;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  font-weight: 850;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.platform-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.1);
+}
+
+.platform-button.x.selected {
+  color: #ffffff;
+  background: #000000;
+  border-color: #000000;
+}
+
+.platform-button.instagram.selected {
+  color: #ffffff;
+  background: linear-gradient(135deg, #f58529 0%, #dd2a7b 45%, #8134af 75%, #515bd4 100%);
+  border-color: transparent;
+}
+
+.platform-button svg {
+  width: 17px;
+  height: 17px;
+}
+
+.instagram-logo {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  border: 2px solid currentColor;
+  border-radius: 7px;
+}
+
+.instagram-logo::before {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+}
+
+.instagram-logo::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 3px;
+  height: 3px;
+  background: currentColor;
+  border-radius: 50%;
+}
+
+.text-card,
+.upload-card {
+  display: grid;
+  gap: 8px;
+}
+
+textarea,
+input {
+  width: 100%;
+  color: #111827;
+  background: #ffffff;
+  border: 1px solid #dbe3ef;
+  border-radius: 8px;
+  outline: none;
+}
+
+textarea:focus,
+input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+textarea {
+  height: 138px;
+  padding: 12px;
+  resize: none;
+  line-height: 1.55;
+}
+
+input {
+  min-height: 38px;
+  padding: 0 12px;
+}
+
+.caption-meta {
+  display: flex;
+  justify-content: flex-end;
+  color: #64748b;
+  font-size: 0.82rem;
+}
+
+.error-list {
+  display: grid;
+  gap: 3px;
+}
+
+.error-list p {
+  margin: 0;
+  color: #ef4444;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.upload-card {
+  padding: 11px;
+  background: #f8fafc;
+  border: 1px dashed #b8c4d8;
+  border-radius: 8px;
+}
+
+.upload-button,
+.submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  gap: 8px;
+  border-radius: 8px;
+  font-weight: 850;
+}
+
+.upload-button {
+  color: #2563eb;
+  background: #ffffff;
+  border: 1px solid #bfdbfe;
+}
+
+.upload-button svg {
+  width: 18px;
+  height: 18px;
+}
+
+#imageUpload {
+  display: none;
+}
+
+.upload-card > span {
+  color: #64748b;
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+
+.image-tile {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 30px;
+  align-items: center;
+  gap: 8px;
+  padding: 7px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.image-tile img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.image-tile strong,
+.image-tile span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-tile strong {
+  font-size: 0.8rem;
+}
+
+.image-tile span {
+  color: #64748b;
+  font-size: 0.74rem;
+}
+
+.image-tile button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  color: #ef4444;
+  background: #ffffff;
+  border: 1px solid #fee2e2;
+  border-radius: 8px;
+}
+
+.image-tile button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.submit-button {
+  width: 100%;
+  color: #ffffff;
+  background: #2563eb;
+  border: 1px solid #2563eb;
+  font-size: 0.95rem;
+}
+
+.submit-button:disabled {
+  color: #94a3b8;
+  background: #e2e8f0;
+  border-color: #e2e8f0;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(8px);
+  z-index: 10;
+}
+
+.save-modal {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding: 24px;
+  text-align: center;
+}
+
+.save-modal h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.save-modal p {
+  max-width: 320px;
+  margin: 0;
+  color: #64748b;
+}
+
+.progress-track {
+  width: 100%;
+  height: 12px;
+  overflow: hidden;
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #10b981);
+  border-radius: inherit;
+  transition: width 420ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.save-modal strong {
+  color: #2563eb;
+}
+
+@keyframes bootProgress {
+  0% {
+    transform: scaleX(0.04);
+  }
+
+  58% {
+    transform: scaleX(0.78);
+  }
+
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+@media (max-width: 560px) {
+  .loading-screen,
+  .app-shell {
+    padding: 14px;
+  }
+
+  .composer-card {
+    padding: 18px;
+  }
+
+  .platform-select {
+    grid-template-columns: 1fr;
+  }
+}
