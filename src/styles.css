@@ -355,9 +355,36 @@ input {
 .save-modal {
   display: grid;
   justify-items: center;
-  gap: 14px;
+  gap: 12px;
   padding: 24px;
   text-align: center;
+}
+
+.success-check {
+  width: 58px;
+  height: 58px;
+  overflow: visible;
+}
+
+.success-check-circle,
+.success-check-mark {
+  fill: none;
+  stroke: #10b981;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 5;
+}
+
+.success-check-circle {
+  stroke-dasharray: 170;
+  stroke-dashoffset: 170;
+  animation: drawCircle 520ms ease-out forwards;
+}
+
+.success-check-mark {
+  stroke-dasharray: 34;
+  stroke-dashoffset: 34;
+  animation: drawCheck 420ms 420ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
 .save-modal h2 {
@@ -401,6 +428,31 @@ input {
 
   100% {
     transform: scaleX(1);
+  }
+}
+
+@keyframes drawCircle {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes drawCheck {
+  0% {
+    stroke-dashoffset: 34;
+    transform: scale(0.92);
+    transform-origin: center;
+  }
+
+  70% {
+    transform: scale(1.08);
+    transform-origin: center;
+  }
+
+  100% {
+    stroke-dashoffset: 0;
+    transform: scale(1);
+    transform-origin: center;
   }
 }
 

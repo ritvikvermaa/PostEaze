@@ -225,6 +225,12 @@ export function App() {
       {saveStatus !== "idle" && (
         <div className="modal-backdrop" role="alertdialog" aria-modal="true" aria-labelledby="saveTitle">
           <div className="save-modal">
+            {saveStatus === "done" && (
+              <svg className="success-check" viewBox="0 0 64 64" aria-hidden="true">
+                <circle className="success-check-circle" cx="32" cy="32" r="27" />
+                <path className="success-check-mark" d="M20 33.5 28.2 42 45 24" />
+              </svg>
+            )}
             <h2 id="saveTitle">{saveStatus === "done" ? "Submitted" : "Saving uploads"}</h2>
             <p>{saveStatus === "done" ? "Your post is stored locally for phase one." : "Saving image details and preparing the local draft..."}</p>
             <div className="progress-track">
