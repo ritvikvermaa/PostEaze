@@ -14,8 +14,9 @@ import {
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
 import { PLATFORM_CONFIG, THEME_STORAGE_KEY, WARNING_THRESHOLD } from "./configuration";
+import { deleteDraftFromStorage, finishDraftOperation, loadDraftsFromStorage, saveDraftToStorage, setActiveDraft, upsertDraft } from "./features/posts/postsSlice";
+import { useAppDispatch, useAppSelector } from "./hooks";
 import { DraftPayload, DraftRecord, PlatformId, UploadedImage } from "./types";
-import { addOrUpdateDraftToLocalStorage, deleteDraftFromLocalStorage, getSavedDrafts } from "./utils/storage";
 import { getSafeLimits, normalizeHashtags, validatePost } from "./utils/validation";
 
 const PLATFORM_OPTIONS = Object.keys(PLATFORM_CONFIG) as PlatformId[];
@@ -45,12 +46,14 @@ export function App() {
   const [images, setImages] = useState<UploadedImage[]>([]);
   const [saveProgress, setSaveProgress] = useState(0);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "done">("idle");
-  const [drafts, setDrafts] = useState<DraftRecord[]>([]);
-  const [draftsLoading, setDraftsLoading] = useState(true);
   const [draftTitle, setDraftTitle] = useState("New draft");
-  const [activeDraftId, setActiveDraftId] = useState<string | null>(null);
   const [draftActionStatus, setDraftActionStatus] = useState<"idle" | "saving" | "loading" | "deleted">("idle");
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const drafts = useAppSelector((state) => state.posts.ids.map((id) => state.posts.entities[id]).filter(Boolean));
+  const draftsLoading = useAppSelector((state) => state.posts.status === "loading");
+  const activeDraftId = useAppSelector((state) => state.posts.activeDraftId);
+  const draftError = useAppSelector((state) => state.posts.error);
 
   const hashtags = useMemo(() => normalizeHashtags(hashtagInput), [hashtagInput]);
   const safeLimits = useMemo(() => getSafeLimits(selectedPlatforms), [selectedPlatforms]);
@@ -87,17 +90,15 @@ export function App() {
 
   useEffect(() => {
     const loadDrafts = async () => {
-      setDraftsLoading(true);
       setDraftActionStatus("loading");
       await new Promise((resolve) => window.setTimeout(resolve, 350));
-      setDrafts(getSavedDrafts());
-      setDraftsLoading(false);
+      dispatch(loadDraftsFromStorage() as never);
       setDraftActionStatus("idle");
       setDraftMessage((currentMessage) => currentMessage ?? "Drafts synced locally.");
     };
 
     void loadDrafts();
-  }, []);
+  }, [dispatch]);
 
   useEffect(() => {
     return () => {
@@ -125,7 +126,7 @@ export function App() {
     setHashtagInput("");
     setImages([]);
     setDraftTitle("New draft");
-    setActiveDraftId(null);
+    dispatch(setActiveDraft(null));
   }
 
   function handleImageUpload(event: ChangeEvent<HTMLInputElement>) {
@@ -173,17 +174,13 @@ export function App() {
       savedAt: new Date().toISOString(),
     };
 
-    const nextDrafts = addOrUpdateDraftToLocalStorage(payload, activeDraftId ?? undefined);
-    const savedDraft = nextDrafts.find((draft) => draft.id === activeDraftId) ?? nextDrafts[0];
-
-    setDrafts(nextDrafts);
-    setActiveDraftId(savedDraft?.id ?? null);
+    dispatch(saveDraftToStorage(payload, activeDraftId ?? undefined) as never);
     setDraftActionStatus("idle");
     setDraftMessage(activeDraftId ? "Draft updated locally." : "Draft saved locally.");
   }
 
   function loadDraft(draft: DraftRecord) {
-    setActiveDraftId(draft.id);
+    dispatch(setActiveDraft(draft.id));
     setDraftTitle(draft.title);
     setCaption(draft.caption);
     setHashtagInput(draft.hashtags.join(" "));
@@ -198,8 +195,7 @@ export function App() {
 
     await new Promise((resolve) => window.setTimeout(resolve, 220));
 
-    const nextDrafts = deleteDraftFromLocalStorage(id);
-    setDrafts(nextDrafts);
+    dispatch(deleteDraftFromStorage(id) as never);
 
     if (activeDraftId === id) {
       resetComposer();
@@ -230,9 +226,8 @@ export function App() {
         savedAt: new Date().toISOString(),
       };
 
-      const nextDrafts = addOrUpdateDraftToLocalStorage(payload, activeDraftId ?? undefined);
-      setDrafts(nextDrafts);
-      setActiveDraftId(activeDraftId ?? nextDrafts[0]?.id ?? null);
+      dispatch(saveDraftToStorage(payload, activeDraftId ?? undefined) as never);
+      dispatch(setActiveDraft(activeDraftId ?? null));
       setSaveProgress(100);
       setSaveStatus("done");
     }, 1600);
@@ -268,12 +263,22 @@ export function App() {
         <>
           <header className="topbar">
             <div className="brand">
-              <span className="brand-icon">
-                <Radio aria-hidden="true" />
-              </span>
               <span className="brand-name">PostEaze</span>
               <span className="brand-tag">Dispatch desk</span>
             </div>
+
+            <nav className="top-nav" aria-label="Primary navigation">
+              <a href="#" className="nav-link">
+                Manage Account
+              </a>
+              <a href="#" className="nav-link">
+                Settings
+              </a>
+              <a href="#" className="nav-link nav-link-logout">
+                Logout
+              </a>
+            </nav>
+
             <button
               type="button"
               className="theme-toggle"

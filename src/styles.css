@@ -144,6 +144,7 @@ button:disabled {
   font-weight: 700;
   font-size: 1.3rem;
   letter-spacing: 0.01em;
+  color: var(--ink);
 }
 
 .loading-card .loading-sub {
@@ -190,7 +191,7 @@ button:disabled {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 22px;
 }
 
@@ -200,27 +201,12 @@ button:disabled {
   gap: 10px;
 }
 
-.brand-icon {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--amber);
-}
-
-.brand-icon svg {
-  width: 18px;
-  height: 18px;
-}
-
 .brand-name {
   font-family: var(--font-display);
   font-weight: 700;
   font-size: 1.2rem;
   letter-spacing: 0.01em;
+  color: var(--ink);
 }
 
 .brand-tag {
@@ -234,15 +220,45 @@ button:disabled {
   border-left: 1px solid var(--border-strong);
 }
 
+.top-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+}
+
+.nav-link {
+  padding: 8px 12px;
+  border-radius: 999px;
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: background-color 160ms var(--ease), color 160ms var(--ease);
+}
+
+.nav-link:hover {
+  background: var(--surface-sunken);
+  color: var(--ink);
+}
+
+.nav-link-logout {
+  color: var(--amber);
+  font-weight: 600;
+}
+
 .theme-toggle {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 30;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 999px;
   background: var(--surface);
   border: 1px solid var(--border);
   color: var(--ink);
+  box-shadow: var(--shadow-card);
   transition: border-color 160ms var(--ease), transform 160ms var(--ease);
 }
 
