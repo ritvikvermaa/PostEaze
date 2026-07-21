@@ -26,9 +26,16 @@ export type SafeLimits = {
 };
 
 export type DraftPayload = {
+  title: string;
   selectedPlatforms: PlatformId[];
   caption: string;
   hashtags: string[];
   images: Array<Pick<UploadedImage, "name" | "size" | "type">>;
   savedAt: string;
+};
+
+export type DraftRecord = DraftPayload & {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
 };

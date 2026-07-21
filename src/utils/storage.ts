@@ -1,20 +1,63 @@
 import { LOCAL_STORAGE_DRAFT_KEY } from "../configuration";
-import { DraftPayload } from "../types";
+import { DraftPayload, DraftRecord } from "../types";
 
-export function saveDraftToLocalStorage(draft: DraftPayload): void {
-  localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(draft));
-}
+function readDrafts(): DraftRecord[] {
+  const rawDrafts = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY);
 
-export function getSavedDraft(): DraftPayload | null {
-  const rawDraft = localStorage.getItem(LOCAL_STORAGE_DRAFT_KEY);
-
-  if (!rawDraft) {
-    return null;
+  if (!rawDrafts) {
+    return [];
   }
 
   try {
-    return JSON.parse(rawDraft) as DraftPayload;
+    const parsedDrafts = JSON.parse(rawDrafts) as DraftRecord[];
+    return Array.isArray(parsedDrafts) ? parsedDrafts : [];
   } catch {
-    return null;
+    return [];
   }
+}
+
+function writeDrafts(drafts: DraftRecord[]): void {
+  localStorage.setItem(LOCAL_STORAGE_DRAFT_KEY, JSON.stringify(drafts));
+}
+
+export function addOrUpdateDraftToLocalStorage(draft: DraftPayload, existingId?: string): DraftRecord[] {
+  const currentDrafts = readDrafts();
+  const timestamp = new Date().toISOString();
+
+  if (existingId) {
+    const updatedDrafts = currentDrafts.map((item) =>
+      item.id === existingId
+        ? {
+            ...item,
+            ...draft,
+            id: item.id,
+            updatedAt: timestamp,
+          }
+        : item,
+    );
+
+    writeDrafts(updatedDrafts);
+    return updatedDrafts;
+  }
+
+  const nextDraft: DraftRecord = {
+    id: crypto.randomUUID(),
+    createdAt: timestamp,
+    updatedAt: timestamp,
+    ...draft,
+  };
+
+  const nextDrafts = [nextDraft, ...currentDrafts];
+  writeDrafts(nextDrafts);
+  return nextDrafts;
+}
+
+export function getSavedDrafts(): DraftRecord[] {
+  return readDrafts();
+}
+
+export function deleteDraftFromLocalStorage(id: string): DraftRecord[] {
+  const nextDrafts = readDrafts().filter((draft) => draft.id !== id);
+  writeDrafts(nextDrafts);
+  return nextDrafts;
 }
