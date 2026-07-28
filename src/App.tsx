@@ -13,11 +13,12 @@ import {
   X as XIcon,
 } from "lucide-react";
 import { ChangeEvent, useEffect, useMemo, useState } from "react";
-import { PLATFORM_CONFIG, THEME_STORAGE_KEY, WARNING_THRESHOLD } from "./configuration";
-import { deleteDraftFromStorage, finishDraftOperation, loadDraftsFromStorage, saveDraftToStorage, setActiveDraft, upsertDraft } from "./features/posts/postsSlice";
+import { PLATFORM_CONFIG, THEME_STORAGE_KEY } from "./configuration";
+import { deleteDraftFromStorage, loadDraftsFromStorage, saveDraftToStorage, setActiveDraft } from "./features/posts/postsSlice";
+import { setPlatforms, togglePlatform } from "./features/platforms/platformsSlice";
 import { useAppDispatch, useAppSelector } from "./hooks";
+import { selectComposerMetrics, selectDraftsForView, selectPlatformEntities, selectSelectedPlatforms } from "./selectors";
 import { DraftPayload, DraftRecord, PlatformId, UploadedImage } from "./types";
-import { getSafeLimits, normalizeHashtags, validatePost } from "./utils/validation";
 
 const PLATFORM_OPTIONS = Object.keys(PLATFORM_CONFIG) as PlatformId[];
 const METER_SEGMENTS = 28;
@@ -40,7 +41,6 @@ function readStoredTheme(): Theme {
 export function App() {
   const [theme, setTheme] = useState<Theme>(readStoredTheme);
   const [isBooting, setIsBooting] = useState(true);
-  const [selectedPlatforms, setSelectedPlatforms] = useState<PlatformId[]>(["x"]);
   const [caption, setCaption] = useState("");
   const [hashtagInput, setHashtagInput] = useState("");
   const [images, setImages] = useState<UploadedImage[]>([]);
@@ -50,33 +50,22 @@ export function App() {
   const [draftActionStatus, setDraftActionStatus] = useState<"idle" | "saving" | "loading" | "deleted">("idle");
   const [draftMessage, setDraftMessage] = useState<string | null>(null);
   const dispatch = useAppDispatch();
-  const drafts = useAppSelector((state) => state.posts.ids.map((id) => state.posts.entities[id]).filter(Boolean));
+  const drafts = useAppSelector(selectDraftsForView);
   const draftsLoading = useAppSelector((state) => state.posts.status === "loading");
   const activeDraftId = useAppSelector((state) => state.posts.activeDraftId);
-  const draftError = useAppSelector((state) => state.posts.error);
+  const selectedPlatforms = useAppSelector(selectSelectedPlatforms);
+  const platformEntities = useAppSelector(selectPlatformEntities);
+  const composerMetrics = useAppSelector((state) => selectComposerMetrics(state, caption, images, selectedPlatforms));
 
-  const hashtags = useMemo(() => normalizeHashtags(hashtagInput), [hashtagInput]);
-  const safeLimits = useMemo(() => getSafeLimits(selectedPlatforms), [selectedPlatforms]);
-  const validations = useMemo(
-    () => validatePost(caption, images, selectedPlatforms),
-    [caption, images, selectedPlatforms],
-  );
-  const hasHashtagSupport = selectedPlatforms.some((platformId) => PLATFORM_CONFIG[platformId].supportsHashtags);
-  const isValid = selectedPlatforms.length > 0 && validations.every((validation) => validation.isValid);
-  const errorMessages = useMemo(() => {
-    const messages = validations.flatMap((validation) => validation.messages);
-
-    if (selectedPlatforms.length === 0) {
-      messages.unshift("Select at least one channel.");
-    }
-
-    return Array.from(new Set(messages));
-  }, [selectedPlatforms.length, validations]);
-
-  const usageRatio = safeLimits && safeLimits.maxCharacters > 0 ? caption.length / safeLimits.maxCharacters : 0;
-  const meterState: "safe" | "warning" | "over" =
-    usageRatio > 1 ? "over" : usageRatio >= WARNING_THRESHOLD ? "warning" : "safe";
-  const litSegments = safeLimits ? Math.min(METER_SEGMENTS, Math.round(usageRatio * METER_SEGMENTS)) : 0;
+  const hashtags = useMemo(() => composerMetrics.hashtags, [composerMetrics.hashtags]);
+  const safeLimits = composerMetrics.safeLimits;
+  const validations = composerMetrics.validations;
+  const hasHashtagSupport = composerMetrics.hasHashtagSupport;
+  const isValid = composerMetrics.isValid;
+  const errorMessages = composerMetrics.errorMessages;
+  const usageRatio = composerMetrics.usageRatio;
+  const meterState = composerMetrics.meterState;
+  const litSegments = composerMetrics.litSegments;
   const meterLitClass = meterState === "safe" ? "lit-teal" : meterState === "warning" ? "lit-amber" : "lit-red";
 
   useEffect(() => {
@@ -110,18 +99,12 @@ export function App() {
     setTheme((current) => (current === "light" ? "dark" : "light"));
   }
 
-  function togglePlatform(platformId: PlatformId) {
-    setSelectedPlatforms((currentPlatforms) => {
-      if (currentPlatforms.includes(platformId)) {
-        return currentPlatforms.filter((id) => id !== platformId);
-      }
-
-      return [...currentPlatforms, platformId];
-    });
+  function handlePlatformToggle(platformId: PlatformId) {
+    dispatch(togglePlatform(platformId));
   }
 
   function resetComposer() {
-    setSelectedPlatforms(["x"]);
+    dispatch(setPlatforms(["x"]));
     setCaption("");
     setHashtagInput("");
     setImages([]);
@@ -184,7 +167,7 @@ export function App() {
     setDraftTitle(draft.title);
     setCaption(draft.caption);
     setHashtagInput(draft.hashtags.join(" "));
-    setSelectedPlatforms(draft.selectedPlatforms);
+    dispatch(setPlatforms(draft.selectedPlatforms));
     setImages([]);
     setDraftMessage(`Loaded "${draft.title}".`);
   }
@@ -309,7 +292,7 @@ export function App() {
                       className={`channel-strip ${isSelected ? "selected" : ""}`}
                       key={platformId}
                       type="button"
-                      onClick={() => togglePlatform(platformId)}
+                      onClick={() => handlePlatformToggle(platformId)}
                       aria-pressed={isSelected}
                     >
                       <span className="channel-row">
