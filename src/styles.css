@@ -396,14 +396,19 @@ button:disabled {
   position: relative;
   width: 15px;
   height: 15px;
-  border: 1.6px solid currentColor;
+  border: 1.6px solid transparent;
   border-radius: 5px;
-  color: var(--ink-muted);
+  background: linear-gradient(45deg, #ff5f40, #ff2d78 50%, #6b4eff 100%);
+  color: white;
   flex-shrink: 0;
 }
 
+[data-theme="dark"] .instagram-mark {
+  background: linear-gradient(45deg, #ff7d5c, #ff3b86 50%, #7b5cff 100%);
+}
+
 .channel-strip.selected .instagram-mark {
-  color: var(--ink);
+  color: white;
 }
 
 .instagram-mark::before {
